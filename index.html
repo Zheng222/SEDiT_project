@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SEDiT: Mask-Free Video Subtitle Erasure via One-step Diffusion Transformer</title>
+
+    <meta name="description" content="SEDiT: Mask-Free Video Subtitle Erasure via One-step Diffusion Transformer" />
+    <meta
+      name="keywords"
+      content="video inpainting, video subtitle erasure, video subtitle removal, logo removal, watermark removal, one-step diffusion transformer, DiT, generative model"
+    />
+
+    <link
+      rel="icon"
+      href="Assets/Favicon/icons8-research-color-16.png"
+      sizes="16x16"
+      type="image/png"
+    />
+    <link
+      rel="icon"
+      href="Assets/Favicon/icons8-research-color-32.png"
+      sizes="32x32"
+      type="image/png"
+    />
+    <link
+      rel="icon"
+      href="Assets/Favicon/icons8-research-color-70.png"
+      sizes="70x70"
+      type="image/png"
+    />
+    <link
+      rel="icon"
+      href="Assets/Favicon/icons8-research-color-72.png"
+      sizes="72x72"
+      type="image/png"
+    />
+    <link
+      rel="icon"
+      href="Assets/Favicon/icons8-research-color-96.png"
+      sizes="96x96"
+      type="image/png"
+    />
+
+    <link rel="stylesheet" type="text/css" href="style.css" />
+    <script>
+      MathJax = { tex: { inlineMath: [['$','$'], ['\\(','\\)']] } };
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js" async></script>
+  </head>
+  <body>
+    <nav class="nav">
+      <a href="#abstract">Abstract</a>
+      <a href="#methodology">Methodology</a>
+      <a href="#conclusion">Conclusion</a>
+      <button class="toggle-btn" onclick="toggleDarkMode()">
+        Toggle Dark Mode
+      </button>
+    </nav>
+
+    <div class="header">
+      <h1>SEDiT: Mask-Free Video Subtitle Erasure via One-step Diffusion Transformer</h1>
+      <div class="authors">
+        <p>
+          <a href="https://zheng222.github.io/">Zheng Hui</a><sup>1</sup>,
+          <a href="https://openreview.net/profile?id=~Yunlong_Bai1">Yunlong Bai</a><sup>2</sup>
+        </p>
+        <p>
+          Baidu Inc.
+        </p>
+        <p>
+          <sup>1</sup><a href="mailto:zheng_hui@aliyun.com">zheng_hui@aliyun.com</a>,
+          <sup>2</sup><a href="mailto:baiyunlong@baidu.com">baiyunlong@baidu.com</a>
+        </p>
+      </div>
+    </div>
+
+    <div class="buttons">
+      <a href="#" target="_blank">Paper</a>
+      <a href="#bibtex">BibTex</a>
+    </div>
+
+    <div class="video-section">
+      <div class="video-container">
+        <iframe
+          width="560"
+          height="315"
+          src="https://www.youtube.com/embed/jwV4Nm6Xr28"
+          title="YouTube video player"
+          frameborder="0"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+          referrerpolicy="strict-origin-when-cross-origin"
+          allowfullscreen
+        ></iframe>
+      </div>
+      <p>
+        We demonstrate <span class="highlight">SEDiT</span>'s subtitle removal capability on a wide range of real-world videos, including <span class="highlight">single-shot long videos</span>, <span class="highlight">multi-shot long videos</span>, <span class="highlight">background-text discrimination</span>, <span class="highlight">multilingual subtitle erasure</span>, <span class="highlight">visual comparisons across different sampling steps</span>, <span class="highlight">hard-case showcases</span>, and <span class="highlight">Logo preservation</span>. In addition, we present the <span class="highlight">video stylization</span> capability achieved by training the same model architecture on a video stylization dataset.
+      </p>
+    </div>
+
+    <div class="abstract" id="abstract">
+      <h2>Abstract</h2>
+      <p>
+        Recent breakthroughs in video diffusion models have significantly accelerated the development of video editing techniques. However, existing methods often rely on inpainting video frames based on masked input, which requires extracting the target video mask in advance, and the precision of the segmentation directly affects the quality of the completion. In this paper, we present <span class="highlight">SEDiT</span>, a novel one-stage video <strong>S</strong>ubtitle <strong>E</strong>rasure approach via One-step <strong>Di</strong>ffusion <strong>T</strong>ransformer. We introduce a mask-free inference approach that enables direct erasure of the targeted subtitle. The proposed one-stage framework mitigates the sub-optimality inherent in the two-stage processing of prior models.
+      </p>
+      <p>
+        Since subtitle removal is a localized editing task in which most pixels remain unchanged, the underlying distribution shift is minimal, making it well-suited to one-step generation under rectified flow. We empirically validate the reliability of one-step denoising and further provide a formal theoretical justification. Under the localized-editing structure of subtitle removal, the conditional optimal transport (OT) map and its induced rectified flow velocity field are <span class="highlight">Lipschitz continuous</span> with respect to the latent variable, which underpins the theoretical feasibility of one-step sampling.
+      </p>
+      <p>
+        To address the challenge of long-term temporal consistency, we adopt a hybrid training strategy by occasionally conditioning the model with a clean first-frame latent. This facilitates temporal continuity, allowing each segment during inference to leverage the output of its predecessor. To avoid visible seams caused by cropping and reinserting processed targets, particularly in scenarios involving substantial motion, we feed the original video directly into SEDiT. Thanks to one-step and chunk-wise streaming inference, our method can efficiently handle native <span class="highlight">1440p video with infinite length</span>.
+      </p>
+    </div>
+
+    <div class="content-section" id="methodology">
+      <h2>Methodology</h2>
+      <figure style="margin:20px auto; text-align:center;">
+        <div style="display:flex; flex-wrap:wrap; justify-content:center; gap:20px;">
+          <div style="flex:1; min-width:300px;">
+            <img src="Assets/SEDiT_train_arch.png" alt="SEDiT Training Architecture" style="width:100%; max-width:800px;" />
+            <p style="margin-top:6px; font-size:0.9em; color:#666;">(a) Training</p>
+          </div>
+          <div style="flex:1; min-width:300px;">
+            <img src="Assets/SEDiT_infer_arch.png" alt="SEDiT Inference Architecture" style="width:100%; max-width:800px;" />
+            <p style="margin-top:6px; font-size:0.9em; color:#666;">(b) Inference</p>
+          </div>
+        </div>
+        <figcaption style="margin-top:12px; font-size:0.95em; line-height:1.5; max-width:900px; margin-left:auto; margin-right:auto;">
+          <strong>Figure 1.</strong> The overview of our mask-free video subtitle erasure framework. We introduce a conditional video branch alongside the original video branch. Given the conditional video, the VAE encoder maps it into tokens, which are concatenated with video latent tokens and then sent to the DiT.
+        </figcaption>
+      </figure>
+      <figure style="margin:20px auto; text-align:center;">
+        <img src="Assets/data_synth.png" alt="Data Synthesis Pipeline" style="width:100%; max-width:900px;" />
+        <figcaption style="margin-top:12px; font-size:0.95em; line-height:1.5;">
+          <strong>Figure 2.</strong> Data Synthesis pipeline.
+        </figcaption>
+      </figure>
+      <h3>Theoretical Justification for One-Step Sampling</h3>
+      <p>
+        The empirical success of one-step inference in SEDiT is grounded in a theoretical analysis of the <span class="highlight">conditional rectified flow (CRF)</span> framework applied to the subtitle erasure task.
+      </p>
+      <p><strong>Localized distributional shift.</strong> The reference video $z_\text{ref}$ and the target subtitle-free video differ only within the subtitle mask region $\mathcal{M}$. The conditional OT map decomposes as:</p>
+      <p style="text-align:center; margin:12px 0;">
+        $$T^*(z \mid z_\text{ref}) = \bigl(T^*_{\mathcal{M}}(z_{\mathcal{M}},\, z_{\neg\mathcal{M}} \mid z_\text{ref}),\ z_{\neg\mathcal{M}}\bigr)$$
+      </p>
+      <p>where the non-subtitle region $z_{\neg\mathcal{M}}$ is preserved exactly by the OT map.</p>
+      <figure style="margin:20px auto; text-align:center;">
+        <img src="Assets/ot_localized.jpg" alt="Localized OT illustration" style="width:100%; max-width:700px;" />
+        <figcaption style="margin-top:12px; font-size:0.95em; line-height:1.5;">
+          <strong>Figure 3.</strong> Illustration of the localized conditional OT path for one-step sampling.
+        </figcaption>
+      </figure>
+      <p><strong>Lipschitz continuity.</strong> Under a mild local Lipschitz assumption on $T^*_{\mathcal{M}}$, the conditional OT map satisfies:</p>
+      <p style="text-align:center; margin:12px 0;">
+        $$\bigl\|T^*(z^{(1)} \mid z_\text{ref}) - T^*(z^{(2)} \mid z_\text{ref})\bigr\| \leq \sqrt{L_{\mathcal{M}}^2 + 1}\;\bigl\|z^{(1)} - z^{(2)}\bigr\|$$
+      </p>
+      <p>Since $\mathcal{M}$ occupies only a small spatio-temporal region, $L_{\mathcal{M}}$ remains moderate, and the CRF path is globally near-linear with only localized curvature within $\mathcal{M}$.</p>
+      <p><strong>Implication for one-step inference.</strong> The near-linearity means a single Euler step:</p>
+      <p style="text-align:center; margin:12px 0;">
+        $$z = z_\text{noisy} + v_\theta(z_\text{noisy},\, t \mid z_\text{ref}) \cdot \Delta t$$
+      </p>
+      <p>suffices to accurately approximate the full flow from the noisy latent to the subtitle-free latent. This provides a <span class="highlight">theoretical guarantee</span> that one-step denoising is a principled consequence of the localized and smooth structure inherent in the subtitle removal task.</p>
+    </div>
+
+    <div class="content-section" id="conclusion">
+      <h2>Conclusion</h2>
+      <p>
+        We propose <span class="highlight">SEDiT</span>, a lightweight, one-stage, mask-free video editing framework for high-field video subtitle erasure. Unlike previous mask-based video inpainting methods, our approach eliminates the need for explicit masks, thereby bypassing the video mask segmentation process entirely. Furthermore, our method preserves the architecture of the underlying generative model, enabling efficient fine-tuning via LoRA. This design choice also allows for seamless integration with higher-quality video generation backbones to further enhance performance.
+      </p>
+      <p>
+        To support subtitle removal in videos of arbitrary length, we adopt a chunk-wise processing strategy, dynamically adjusting the chunk size based on the input resolution. To mitigate temporal discontinuities across chunks, we probabilistically inject the initial frame as a conditioning signal. Benefiting from this strong conditional guidance, frame repetition across chunks achieves temporal consistency with minimal artifacts.
+      </p>
+      <p>
+        During inference, our method requires only <span class="highlight">one step</span> to produce high-quality results. With the high compression ratio of the base VAE model, our approach can directly process 1080p-resolution videos, completing 65 frames in just <span class="highlight">4 seconds</span>&mdash;making it particularly suitable for large-scale deployment.
+      </p>
+    </div>
+
+    <div class="bibtex-section" id="bibtex">
+      <h2>BibTeX</h2>
+      <button class="bibtex-copy-button" onclick="copyBibTeX()">
+        Copy to Clipboard
+      </button>
+      <pre>
+        <code class="language-bibtex">
+          @inproceedings{TODO: YourPaperCitation,
+            title={TODO: Paper Title},
+            author={[TODO: Author Names]},
+            booktitle={[TODO: Conference Name]},
+            year={TODO: 2024},
+            pages={[pages]}
+          }
+        </code>
+      </pre>
+    </div>
+
+    <div class="footer">
+      <p>© 2026 Baidu Inc. All rights reserved.</p>
+      <p>
+        Website template free to borrow from
+        <a
+          href="https://github.com/indramal/iNdra-GitHub-Page-Template-For-Resarch"
+          >here</a
+        >.
+      </p>
+      <div>
+        <script type="text/javascript" id="clstr_globe" src="//clustrmaps.com/globe.js?d=CvOWeWh8cyLYATtFSRVEMJ-Y-ZhATULw2jxmJpGdB9w"></script>
+      </div>
+    </div>
+
+    <button class="scrollUpBtn" id="scrollUpBtn" onclick="scrollToTop()">
+      ⬆
+    </button>
+
+    <script src="script.js"></script>
+  </body>
+</html>
